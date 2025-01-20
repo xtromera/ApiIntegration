@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Combined Feed Viewer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+</head>
+<body>
+    <div class="container">
+        <h1>Combined Feed Viewer</h1>
+        <p id="error"></p>
+        <!-- Sorted Buttons -->
+        <div id="sort-buttons">
+            <button onclick="sortPosts('newest')">Sort by Newest</button>
+            <button onclick="sortPosts('oldest')">Sort by Oldest</button>
+            <button id="toggle-theme-btn">Toggle Theme</button>
+        </div>
+        <div id="posts-container">
+            <!-- Posts to be loaded here dynamically -->
+        </div>
+        <div id="loader">Loading...</div>
+
+    </div>
+
+    <script>
+        let reddit_after = null;
+        let loading = false;
+        let allPosts = [];
+        let currentSortOrder = 'newest';
+        let youtube_next_page_token = null;
+        document.addEventListener('DOMContentLoaded', function() {
+            const body = document.body;
+            if (localStorage.getItem('theme') === 'dark') {
+                body.classList.add('dark-theme');
+            } else {
+                body.classList.remove('dark-theme');
+            }
+
+            document.getElementById('toggle-theme-btn').addEventListener('click', function() {
+                body.classList.toggle('dark-theme');
+                localStorage.setItem('theme', body.classList.contains('dark-theme') ? 'dark' : 'light');
+            });
+
+            fetchPosts();
+        });
+
+        function fetchPosts() {
+            if (loading) return;
+            loading = true;
+            document.getElementById('loader').style.display = 'block';
+
+            Promise.all([fetchRedditPosts(), fetchYouTubeVideos()])
+                .then(() => {
+                    loading = false;
+                    document.getElementById('loader').style.display = 'none';
+
+                    // Remove duplicate posts which is based on id and source
+                    const uniquePosts = {};
+                    allPosts.forEach(post => {
+                        const key = `${post.source}-${post.id}`;
+                        uniquePosts[key] = post;
+                    });
+                    allPosts = Object.values(uniquePosts);
+
+                    sortPosts(currentSortOrder, false); 
+
+                    // Rendering posts
+                    renderPosts();
+                })
+                .catch(error => {
+                    loading = false;
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('error').innerText = 'Error: ' + error.message;
+                });
+        }
+
+        function fetchRedditPosts() {
+            return new Promise((resolve, reject) => {
+                let url = '/api/reddit_posts';
+                if (reddit_after) {
+                    url += '?after=' + encodeURIComponent(reddit_after);
+                }
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            console.error('Error fetching Reddit posts:', data.error);
+                            resolve(); // Resolve even if there's an error
+                        } else {
+                            reddit_after = data.after;
+                            // Add new posts to allPosts array
+                            allPosts = allPosts.concat(data.posts);
+                            resolve();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching Reddit posts:', error);
+                        resolve(); // Resolve even if there's an error
+                    });
+            });
+        }
+
+        function fetchYouTubeVideos() {
+            return new Promise((resolve, reject) => {
+                let url = '/api/youtube_videos';
+                if (youtube_next_page_token) {
+                    url += '?pageToken=' + encodeURIComponent(youtube_next_page_token);
+                }
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            console.error('Error fetching YouTube videos:', data.error);
+                            resolve(); // Resolve even if there's an error
+                        } else {
+                            youtube_next_page_token = data.nextPageToken;
+                            // Add new videos to allPosts array
+                            allPosts = allPosts.concat(
+                                data.videos.map(video => ({
+                                    id: video.id,
+                                    source: 'YouTube',
+                                    title: video.title,
+                                    url: video.url,
+                                    thumbnail: video.thumbnail,
+                                    description: video.description,
+                                    channelTitle: video.channelTitle,
+                                    created_datetime: video.publishedAt,
+                                }))
+                            );
+                            resolve();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching YouTube videos:', error);
+                        resolve(); // Resolve even if there's an error
+                    });
+            });
+        }
+        function sortPosts(order, shouldRender = true) {
+            currentSortOrder = order;
+            if (order === 'newest') {
+                allPosts.sort((a, b) => new Date(b.created_datetime) - new Date(a.created_datetime));
+            } else if (order === 'oldest') {
+                allPosts.sort((a, b) => new Date(a.created_datetime) - new Date(b.created_datetime));
+            }
+            if (shouldRender) {
+                renderPosts();
+            }
+        }
+
+        function renderPosts() {
+            const postsContainer = document.getElementById('posts-container');
+            postsContainer.innerHTML = '';
+
+            allPosts.forEach(post => {
+                const postElement = document.createElement('div');
+                postElement.className = 'post';
+
+                const icon = document.createElement('img');
+                icon.className = 'icon';
+
+                if (post.source === 'Reddit') {
+                    postElement.classList.add('reddit');
+                    icon.src = '/static/images/reddit.png';
+
+                } else if(post.source === 'YouTube') {
+                    postElement.classList.add('YouTube');
+                    icon.src = '/static/images/youtube.png';
+                }
+
+                const sourceLabel = document.createElement('div');
+                sourceLabel.className = 'source-label';
+                sourceLabel.innerText = post.source;
+                postElement.appendChild(icon);
+                postElement.appendChild(sourceLabel);
+
+
+
+                const postContent = document.createElement('div');
+                postContent.className = 'post-content';
+
+                // For Reddit
+                if (post.source === 'Reddit') {
+                    if (post.thumbnail) {
+                        const img = document.createElement('img');
+                        img.src = post.thumbnail;
+                        img.alt = 'Thumbnail';
+                        img.className = 'thumbnail';
+                        postContent.appendChild(img);
+                    }
+
+                    const postDetails = document.createElement('div');
+                    postDetails.className = 'post-details';
+
+                    const titleLink = document.createElement('a');
+                    titleLink.href = post.url;
+                    titleLink.target = '_blank';
+                    const titleStrong = document.createElement('strong');
+                    titleStrong.innerText = post.title;
+                    titleLink.appendChild(titleStrong);
+
+                    const detailsPara = document.createElement('p');
+                    detailsPara.innerText = `Score: ${post.score} | Comments: ${post.num_comments} | Author: ${post.author}`;
+
+                    const date = new Date(post.created_datetime);
+                    const datePara = document.createElement('p');
+                    datePara.innerText = `Posted on: ${date.toLocaleString()}`;
+
+                    const selfTextPara = document.createElement('p');
+                    selfTextPara.innerText = post.selftext;
+
+                    postDetails.appendChild(titleLink);
+                    postDetails.appendChild(detailsPara);
+                    postDetails.appendChild(datePara);
+                    postDetails.appendChild(selfTextPara);
+
+                    postContent.appendChild(postDetails);
+                    postElement.appendChild(postContent);
+                    postsContainer.appendChild(postElement);
+
+                } else if (post.source === 'YouTube') {
+                    // For YouTube
+                    if (post.thumbnail) {
+                        const img = document.createElement('img');
+                        img.src = post.thumbnail;
+                        img.alt = 'Thumbnail';
+                        img.className = 'thumbnail';
+                        postContent.appendChild(img);
+                    }
+
+                    const postDetails = document.createElement('div');
+                    postDetails.className = 'post-details';
+
+                    const titleLink = document.createElement('a');
+                    titleLink.href = post.url;
+                    titleLink.target = '_blank';
+                    const titleStrong = document.createElement('strong');
+                    titleStrong.innerText = post.title;
+                    titleLink.appendChild(titleStrong);
+
+                    const detailsPara = document.createElement('p');
+                    detailsPara.innerText = `Channel: ${post.channelTitle}`;
+
+                    const date = new Date(post.created_datetime);
+                    const datePara = document.createElement('p');
+                    datePara.innerText = `Published on: ${date.toLocaleString()}`;
+
+                    const descriptionPara = document.createElement('p');
+                    descriptionPara.innerText = post.description;
+
+                    postDetails.appendChild(titleLink);
+                    postDetails.appendChild(detailsPara);
+                    postDetails.appendChild(datePara);
+                    postDetails.appendChild(descriptionPara);
+
+                    postContent.appendChild(postDetails);
+                    postElement.appendChild(postContent);
+                    postsContainer.appendChild(postElement);
+                }
+            });
+        }
+       
+        
+        function handleScroll() {
+            const scrollTop = window.scrollY;
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+
+            if (scrollTop + windowHeight >= documentHeight - 100) {
+                fetchPosts();
+            }
+        }
+
+        window.addEventListener('scroll', handleScroll);
+
+        
+
+        // Fetch initial posts on page load
+        fetchPosts();
+    </script>
+</body>
+</html>

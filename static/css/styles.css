@@ -1,0 +1,174 @@
+:root {
+    --background-color: #f5f5dc; 
+    --text-color: #333; /* Light theme */
+}
+
+.dark-theme {
+    --background-color: #333; /* Dark theme */
+    --text-color: #d4d4d4; 
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    height: 100vh;
+    transition: background-color 0.3s, color 0.3s; 
+    padding-top: 20px;
+
+}
+
+  
+
+
+.login-container {
+    background: white;
+    padding: 200px;
+    border-radius: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    width: 30%; 
+    max-width: 500px; 
+
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+input[type="submit"] {
+    background-color: #365892; 
+    color: white; 
+    padding: 5px 10px; 
+    margin: 8px auto; 
+    border: none; 
+    cursor: pointer; 
+    width: 20%;
+    border-radius: 8px;
+    font-size: 20px; 
+}
+
+input[type="submit"]:hover {
+    opacity: 0.8;
+}
+h2 {
+    text-align: start;
+    margin-top: 0; 
+    padding-bottom: 20px;
+}
+
+.input-group {
+    width: 100%;
+}
+/* ------------------------------------------------------------ */
+body {
+    font-family: Arial, sans-serif;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+.container {
+    max-width: 800px;
+    margin: 20px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+}
+.post {
+    border-bottom: 1px solid #ddd;
+    padding: 15px 0;
+    display: flex;
+    align-items: center;
+}
+.post:last-child {
+    border-bottom: none;
+}
+.profile-image, .thumbnail {
+    max-width: 50px;
+    max-height: 50px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+.post-content {
+    display: flex;
+}
+.post-details {
+    flex: 1;
+}
+.source-label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+#loader {
+    text-align: center;
+    padding: 10px;
+    display: none;
+}
+/* Style for sort buttons */
+#sort-buttons {
+    margin-bottom: 20px;
+}
+#sort-buttons button {
+    margin-right: 10px;
+    background-color: #365892; 
+    color: white; 
+    padding: 5px 10px; 
+    border: none; 
+    cursor: pointer; 
+    width: 20%;
+    border-radius: 8px;
+    font-size: 20px; 
+}
+#error {
+    color: red;
+}
+.icon {
+    width: 50px;
+    height: auto;
+    margin-right: 10px;
+}
+
+.reddit {
+    background-color: #ffffff;
+    color: rgb(0, 0, 0);
+}
+
+.twitter {
+    background-color: #ffffff;
+    color: rgb(0, 0, 0);
+}
+
+.source-label {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.content {
+    flex: 1;
+}
+button {
+    padding: 8px 16px;
+    margin-right: 10px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
