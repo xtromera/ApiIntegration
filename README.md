@@ -21,8 +21,8 @@ This project provides a simple API for integrating with Reddit and YouTube using
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/social-media-integration-api.git
-   cd social-media-integration-api
+   git clone https://github.com/xtromera/ApiIntegration
+   cd ApiIntegration
    ```
 
 2. Set up a virtual environment:
@@ -32,13 +32,7 @@ This project provides a simple API for integrating with Reddit and YouTube using
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-3. Install required packages:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Create a `.env` file in the root directory of the project and add the following environment variables:
+3. Create a `.env` file in the root directory of the project and add the following environment variables:
    
    ```bash
    REDDIT_CLIENT_ID=your_reddit_client_id
@@ -47,13 +41,13 @@ This project provides a simple API for integrating with Reddit and YouTube using
    YOUTUBE_API_KEY=your_youtube_api_key
    ```
 
-5. Run the Flask app:
+4. Run the Flask app:
 
    ```bash
    python app.py
    ```
 
-6. The app will be available at `http://127.0.0.1:5000/`.
+5. The app will be available at `http://127.0.0.1:5000/`.
 
 ## API Endpoints
 
